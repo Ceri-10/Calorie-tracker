@@ -1,38 +1,52 @@
-import { useState } from "react"
+import { Dispatch, useState } from "react"
+import { v4 as uuidv4 } from 'uuid';
 import { categories } from "../data/categories"
 import { Activity } from "../types"
+import { ActivityActions } from "../reducers/activity-reducer"
 
-export default function Form() {
 
-    const [activity,setActivity] = useState<Activity>({
-        category: 1,
-        name:"",
-        calories:0
-    })
- 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) =>{
-        
+type FormProps = {
+    dispatch: Dispatch<ActivityActions>
+}
+
+const initialState: Activity = ({
+    id: uuidv4(),
+    category: 1,
+    name: "",
+    calories: 0
+})
+
+export default function Form({ dispatch }: FormProps) {
+
+    const [activity, setActivity] = useState<Activity>(initialState)
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) => {
+
         const isNumberField = ["category", "calories"].includes(e.target.id)
-        
+
         setActivity({
             ...activity,
-            [e.target.id]:isNumberField ? +e.target.value : e.target.value
+            [e.target.id]: isNumberField ? +e.target.value : e.target.value
         })
 
     }
 
     const isValidActivity = () => {
-        const {name,calories} = activity
-        return name.trim() !== "" && calories > 0 
+        const { name, calories } = activity
+        return name.trim() !== "" && calories > 0
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        dispatch({ type: "save-activity", payload: { newActivity: activity } })
+
+        setActivity({ ...initialState, id: uuidv4() })
     }
 
     return (
         <form className="space-y-5 bg-white shadow p-10 rounded-lg"
-        onSubmit={handleSubmit}>
+            onSubmit={handleSubmit}>
 
             <div className="grid grid-cols-1 gap-3">
                 <label htmlFor="category" className="font-bold">Categoria:  </label>
